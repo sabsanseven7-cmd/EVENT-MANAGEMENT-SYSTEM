@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors">
+
+<form method="POST" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 transition-colors">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-gray-100">Login</h2>
+        <button type="button" onclick="toggleDark()" class="p-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100" title="Toggle dark mode">Dark</button>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-3 rounded {% if category == 'error' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300{% elif category == 'success' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300{% else %}bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <input name="username" placeholder="Username"
+           class="w-full mb-3 p-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+           required>
+
+    <input type="password" name="password" placeholder="Password"
+           class="w-full mb-3 p-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+           required>
+
+    <select name="role" class="w-full mb-4 p-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg transition duration-200">
+        Login
+    </button>
+
+    <p class="text-sm mt-4 text-center text-gray-600 dark:text-gray-300">
+        New user? <a href="/register" class="text-indigo-600 dark:text-indigo-400 hover:underline">Register here</a>
+    </p>
+</form>
+
+<script>
+function toggleDark() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.documentElement.classList.add('dark');
+else
+    document.documentElement.classList.remove('dark');
+</script>
+</body>
+</html>

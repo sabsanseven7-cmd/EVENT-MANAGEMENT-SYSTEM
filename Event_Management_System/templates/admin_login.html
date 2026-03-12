@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Admin Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="p-10 bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Admin Login</h2>
+    <button type="button" onclick="toggleDark()" class="p-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100">Dark</button>
+</div>
+
+<form method="POST" class="space-y-3 max-w-sm bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-3 rounded {% if category == 'error' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300{% else %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <input name="username" placeholder="Admin Username" class="border dark:border-gray-600 p-2 w-full rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <input name="password" type="password" placeholder="Password" class="border dark:border-gray-600 p-2 w-full rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Login</button>
+</form>
+
+<script>
+function toggleDark() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.documentElement.classList.add('dark');
+else
+    document.documentElement.classList.remove('dark');
+</script>
+</body>
+</html>

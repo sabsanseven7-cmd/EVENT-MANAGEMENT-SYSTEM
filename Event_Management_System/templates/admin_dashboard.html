@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+
+<nav class="bg-indigo-800 dark:bg-indigo-900 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold">Admin Dashboard</h1>
+        <div class="space-x-4 flex items-center">
+            <a href="/admin/events" class="hover:underline">Events</a>
+            <a href="/admin/venues" class="hover:underline">Venues</a>
+            <span>Welcome, {{ session.username }}</span>
+            <a href="/logout" class="hover:underline">Logout</a>
+            <button type="button" onclick="toggleDark()" class="p-2 rounded bg-white/10 hover:bg-white/20" title="Toggle dark mode">Dark</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto p-6">
+    <!-- Statistics Cards -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Total Users</h3>
+            <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ stats.total_users }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Total Bookings</h3>
+            <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ stats.total_bookings }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors">
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Pending Bookings</h3>
+            <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ stats.pending_bookings }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8 overflow-hidden transition-colors">
+        <div class="p-6 border-b dark:border-gray-700">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Recent Bookings</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Event</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Venue</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Guests</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                    {% for booking in bookings %}
+                    <tr class="dark:bg-gray-800">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">{{ booking.username }}</div>
+                                {% if booking.email %}
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ booking.email }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{{ booking.event_type }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{{ booking.venue_name or '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{{ booking.date }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-300">{{ booking.guests }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                {% if booking.status == 'confirmed' %}bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300
+                                {% elif booking.status == 'pending' %}bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300
+                                {% else %}bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300{% endif %}">
+                                {{ booking.status.title() }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <select onchange="updateStatus({{ booking.id }} this.value)" class="border dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                                <option value="pending" {% if booking.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors">
+        <div class="p-6 border-b dark:border-gray-700">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Recent Chat Logs</h3>
+        </div>
+        <div class="p-6">
+            {% for chat in chats %}
+            <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200">
+                <div class="font-medium text-sm text-gray-600 dark:text-gray-400 mb-1">{{ chat.created_at }}</div>
+                <div class="mb-2"><span class="font-semibold">User:</span> {{ chat.user_message }}</div>
+                <div class="whitespace-pre-wrap"><span class="font-semibold">Bot:</span> {{ chat.bot_reply }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleDark() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.documentElement.classList.add('dark');
+else
+    document.documentElement.classList.remove('dark');
+</script>
+<script>
+function updateStatus(bookingId, newStatus) {
+    fetch(`/admin/booking/${bookingId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error updating status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating status');
+    });
+}
+</script>
+
+</body>
+</html>

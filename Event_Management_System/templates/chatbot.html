@@ -1,0 +1,87 @@
+<!-- CHATBOT: dark mode uses parent page theme via .dark -->
+<button onclick="toggleChat()"
+class="fixed bottom-5 right-5 z-50 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors">
+Chat
+</button>
+
+<div id="chatbox"
+class="hidden fixed bottom-20 right-5 z-50 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 transition-colors">
+
+    <div class="bg-indigo-600 dark:bg-indigo-700 text-white p-3 rounded-t-lg font-semibold">
+        AI Event Assistant
+    </div>
+
+    <div id="chatBody"
+         class="p-3 h-56 overflow-y-auto text-sm bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+        <div class="text-gray-500 dark:text-gray-400 text-center">
+            Ask about events, prices, or try "birthday for 50 people"
+        </div>
+    </div>
+
+    <div class="flex border-t dark:border-gray-600">
+        <input id="userInput"
+               type="text"
+               placeholder="Type your message..."
+               class="flex-1 p-2 outline-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+               onkeydown="if(event.key==='Enter')sendMessage()">
+
+        <button onclick="sendMessage()"
+                class="bg-indigo-600 dark:bg-indigo-700 text-white px-4 hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+            Send
+        </button>
+    </div>
+</div>
+
+<script>
+function toggleChat() {
+    document.getElementById("chatbox").classList.toggle("hidden");
+}
+
+function formatBotReply(text) {
+    if (!text) return '';
+    var s = String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    return s;
+}
+
+function addMessage(sender, text) {
+    var chatBody = document.getElementById("chatBody");
+    var placeholder = chatBody.querySelector('.text-center');
+    if (placeholder) placeholder.remove();
+
+    var div = document.createElement("div");
+    div.className = sender === "user" ? "text-right my-2" : "text-left my-2";
+    var inner = sender === "user"
+        ? '<span class="inline-block px-3 py-2 rounded bg-indigo-500 text-white">' + formatBotReply(text) + '</span>'
+        : '<span class="inline-block px-3 py-2 rounded bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 text-left">' + formatBotReply(text) + '</span>';
+    div.innerHTML = inner;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function sendMessage() {
+    var input = document.getElementById("userInput");
+    var message = input.value.trim();
+    if (!message) return;
+
+    addMessage("user", message);
+    input.value = "";
+
+    fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        addMessage("bot", data.reply);
+    })
+    .catch(function() {
+        addMessage("bot", "Sorry, something went wrong. Please try again.");
+    });
+}
+</script>

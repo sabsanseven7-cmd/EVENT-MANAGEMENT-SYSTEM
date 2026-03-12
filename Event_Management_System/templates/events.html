@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+
+<nav class="bg-indigo-600 dark:bg-indigo-800 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold">Event Management</h1>
+        <div class="space-x-4 flex items-center">
+            <a href="/events" class="hover:underline font-semibold">Events</a>
+            {% if session.user %}
+                <a href="/my_bookings" class="hover:underline">My Bookings</a>
+                <a href="/logout" class="hover:underline">Logout</a>
+            {% else %}
+                <a href="/login" class="hover:underline">Login</a>
+            {% endif %}
+            <a href="/" class="hover:underline">Home</a>
+            <button type="button" onclick="toggleDark()" class="p-2 rounded bg-white/10 hover:bg-white/20" title="Toggle dark mode">Dark</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto p-6">
+    <h2 class="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">Available Events</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-3 rounded {% if category == 'error' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300{% elif category == 'success' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300{% else %}bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if session.user %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for event in events %}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-colors">
+                {% if event.image_url %}
+                <img src="{{ event.image_url }}" alt="{{ event.name }}" class="w-full h-48 object-cover">
+                {% else %}
+                <div class="w-full h-48 bg-indigo-100 dark:bg-gray-700 flex items-center justify-center text-4xl text-indigo-400">Event</div>
+                {% endif %}
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ event.name }}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-3">{{ event.description }}</p>
+                    <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Rs.{{ "{:,.0f}".format(event.price) }}</p>
+
+                    <form method="POST" action="/book" class="space-y-3">
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Venue</label>
+                        <select name="venue_id" required class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Select venue</option>
+                            {% for venue in venues %}
+                            <option value="{{ venue.id }}">{{ venue.name }} (capacity {{ venue.capacity }})</option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="date" name="date"
+                               class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
+                               required>
+
+                        <input type="number" name="guests" placeholder="Number of guests" min="1" max="1000"
+                               class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500"
+                               required>
+
+                        <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg transition duration-200">
+                            Book {{ event.name }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <h3 class="text-xl mb-4 text-gray-700 dark:text-gray-300">Please login to view and book events</h3>
+            <a href="/login" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg">
+                Login Now
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% include "chatbot.html" %}
+
+<script>
+function toggleDark() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.documentElement.classList.add('dark');
+else
+    document.documentElement.classList.remove('dark');
+
+document.addEventListener('DOMContentLoaded', function() {
+    var dateInputs = document.querySelectorAll('input[type="date"]');
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var minDate = tomorrow.toISOString().split('T')[0];
+    dateInputs.forEach(function(input) { input.min = minDate; });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>My Bookings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors">
+
+<nav class="bg-indigo-600 dark:bg-indigo-800 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold">Event Management</h1>
+        <div class="space-x-4 flex items-center">
+            <a href="/events" class="hover:underline">Events</a>
+            <a href="/my_bookings" class="hover:underline font-semibold">My Bookings</a>
+            <a href="/logout" class="hover:underline">Logout</a>
+            <a href="/" class="hover:underline">Home</a>
+            <button type="button" onclick="toggleDark()" class="p-2 rounded bg-white/10 hover:bg-white/20" title="Toggle dark mode">Dark</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">My Bookings</h2>
+
+    {% if bookings %}
+        <div class="grid gap-4">
+            {% for booking in bookings %}
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow transition-colors">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">{{ booking.event_type }}</h3>
+                        <p class="text-gray-600 dark:text-gray-300">Date: {{ booking.date }}</p>
+                        <p class="text-gray-600 dark:text-gray-300">Guests: {{ booking.guests }}</p>
+                        {% if booking.venue_name %}
+                        <p class="text-gray-600 dark:text-gray-300">Venue: {{ booking.venue_name }}</p>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Booked on: {{ booking.created_at }}</p>
+                    </div>
+                    <div>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium
+                            {% if booking.status == 'confirmed' %}bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300
+                            {% elif booking.status == 'pending' %}bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300
+                            {% else %}bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300{% endif %}">
+                            {{ booking.status.title() }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-500 dark:text-gray-400 mb-4">No bookings yet!</p>
+            <a href="/events" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded">
+                Book Your First Event
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% include "chatbot.html" %}
+
+<script>
+function toggleDark() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.documentElement.classList.add('dark');
+else
+    document.documentElement.classList.remove('dark');
+</script>
+</body>
+</html>

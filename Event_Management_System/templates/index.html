@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+<form method="POST" class="bg-white p-6 rounded shadow w-80">
+    <h2 class="text-xl font-bold mb-4 text-center">Login</h2>
+
+    <input name="username" placeholder="Username"
+     class="w-full mb-3 p-2 border">
+
+    <input name="password" type="password" placeholder="Password"
+     class="w-full mb-3 p-2 border">
+
+    <button class="w-full bg-indigo-600 text-white p-2 rounded">Login</button>
+</form>
+
+<!-- CHATBOT FLOAT -->
+<button onclick="toggleChat()"
+class="fixed bottom-5 right-5 bg-indigo-600 text-white p-4 rounded-full">💬</button>
+
+<div id="chat" class="hidden fixed bottom-20 right-5 bg-white w-72 shadow rounded">
+    <div class="bg-indigo-600 text-white p-2">AI Chatbot</div>
+    <div id="chatBody" class="p-2 h-40 overflow-y-auto"></div>
+    <input id="msg" class="w-full border p-2" placeholder="Ask something..."
+     onkeydown="if(event.key==='Enter')send()">
+</div>
+
+<script>
+function toggleChat(){
+ document.getElementById("chat").classList.toggle("hidden");
+}
+
+function send(){
+ let m=document.getElementById("msg").value;
+ if(!m)return;
+ fetch("/chat",{method:"POST",headers:{"Content-Type":"application/json"},
+ body:JSON.stringify({message:m})})
+ .then(r=>r.json())
+ .then(d=>{
+   document.getElementById("chatBody").innerHTML+=
+   "<div class='text-sm my-1'>🤖 "+d.reply+"</div>";
+ });
+ document.getElementById("msg").value="";
+}
+</script>
+
+</body>
+</html>
